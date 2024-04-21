@@ -5,7 +5,7 @@ void Letrng::generate_sequence(const unsigned int n_numbers) {
   fp.open("../output.txt");
   for (unsigned int n = 0; n < n_numbers; n++) {
     uint64_t random_number = generate_random_number();
-    std::string number_str = std::to_string(static_cast<int>(random_number));
+    std::string number_str = std::to_string(static_cast<unsigned int>(random_number));
     std::cout << number_str << "\n";
     fp << number_str << "\n";
   }
@@ -13,13 +13,13 @@ void Letrng::generate_sequence(const unsigned int n_numbers) {
 }
 
 uint64_t Letrng::generate_random_number() {
-  uint64_t ret = 0;
+  uint64_t result = 0;
   for (unsigned int n = 0; n < 7; n++) {
     uint64_t random_bit = fair_coin();
-    ret ^= random_bit;
-    ret <<= 1;
+    result ^= random_bit;
+    result <<= 1;
   }
-  return ret;
+  return result;
 }
 
 uint64_t Letrng::fair_coin() {
@@ -54,7 +54,7 @@ uint64_t Letrng::fair_coin() {
 
 uint64_t Letrng::fold_bits(const uint64_t &value) {
   uint64_t result = 0;
-  for (int n = 1; n <= 64; n++) {
+  for (unsigned int n = 1; n <= 64; n++) {
     uint64_t tmp = (value << (64 - n));
     tmp >>= 63;
     result ^= tmp;
@@ -96,7 +96,7 @@ void Letrng::toss_coins(uint64_t &x64, std::mutex &x64mutex, uint64_t &y64, std:
     while (active.load()) {
       uint64_t loc = coin.load();
       x64_out <<= 1;
-      x64_out ^= loc;
+      x64_out |= loc;
     }
     x64mutex.lock();
     x64 = x64_out;
@@ -109,7 +109,7 @@ void Letrng::toss_coins(uint64_t &x64, std::mutex &x64mutex, uint64_t &y64, std:
     while (active.load()) {
       uint64_t loc = coin.load();
       y64_out <<= 1;
-      y64_out ^= loc;
+      y64_out |= loc;
     }
     y64mutex.lock();
     y64 = y64_out;

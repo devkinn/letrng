@@ -7,7 +7,7 @@
 #include <thread>
 #include <vector>
 
-const unsigned int N = 100000;
+const unsigned int N = 50000;
 
 class Letrng {
  public:
