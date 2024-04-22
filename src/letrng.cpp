@@ -2,7 +2,7 @@
 
 void Letrng::generate_sequence(const unsigned int n_numbers) {
   std::ofstream fp;
-  fp.open("../output.txt");
+  fp.open("output.txt");
   for (unsigned int n = 0; n < n_numbers; n++) {
     uint64_t random_number = generate_random_number();
     std::string number_str = std::to_string(static_cast<unsigned int>(random_number));
@@ -14,26 +14,23 @@ void Letrng::generate_sequence(const unsigned int n_numbers) {
 
 uint64_t Letrng::generate_random_number() {
   uint64_t result = 0;
-  for (unsigned int n = 0; n < 7; n++) {
+  for (unsigned int n = 0; n < 8; n++) {
     uint64_t random_bit = fair_coin();
-    result ^= random_bit;
     result <<= 1;
+    result ^= random_bit;
   }
   return result;
 }
 
 uint64_t Letrng::fair_coin() {
-  uint64_t x64 = 0;
-  uint64_t y64 = 0;
-
-  std::mutex x64mutex;
-  std::mutex y64mutex;
+  std::atomic<uint64_t> x64 = 0;
+  std::atomic<uint64_t> y64 = 0;
 
   while (true) {
-    toss_coins(x64, x64mutex, y64, y64mutex);
+    toss_coins(x64, y64);
 
-    uint64_t x64_out = copy_from_shared(x64, x64mutex);
-    uint64_t y64_out = copy_from_shared(y64, y64mutex);
+    uint64_t x64_out = x64.load();
+    uint64_t y64_out = y64.load();
 
     // std::cout << x64_out << " " << y64_out << std::endl;
 
@@ -62,64 +59,52 @@ uint64_t Letrng::fold_bits(const uint64_t &value) {
   return result;
 }
 
-void Letrng::toss_coins(uint64_t &x64, std::mutex &x64mutex, uint64_t &y64, std::mutex &y64mutex) {
+void Letrng::toss_coins(std::atomic<uint64_t> &x64, std::atomic<uint64_t> &y64) {
   std::atomic<uint64_t> coin(0);
-  std::atomic<bool> active(false);
+  std::atomic<uint8_t> sampler_finished_c(0);
   std::vector<std::thread> threads;
 
-  std::thread writer1 = std::thread([&] {
-    active.store(true);
+  threads.emplace_back(std::thread([&coin, &sampler_finished_c] {
     for (unsigned int n = 0; n < N; n++) {
       coin.store(n % 2);
-      if (active.load() == false) {
+      if (sampler_finished_c.load() == 2) {
         break;
       }
     }
-    active.store(false);
-  });
-  threads.push_back(std::move(writer1));
+  }));
 
-  std::thread writer2 = std::thread([&] {
-    active.store(true);
+  threads.emplace_back(std::thread([&coin, &sampler_finished_c] {
     for (unsigned int n = N; n > 0; n--) {
       coin.store(n % 2);
-      if (active.load() == false) {
+      if (sampler_finished_c.load() == 2) {
         break;
       }
     }
-    active.store(false);
-  });
-  threads.push_back(std::move(writer2));
+  }));
 
-  std::thread sampler1 = std::thread([&] {
+  threads.emplace_back(std::thread([&coin, &sampler_finished_c, &x64] {
     uint64_t x64_out = 0;
-    while (active.load()) {
+    for (unsigned int n = 0; n < 64; n++) {
       uint64_t loc = coin.load();
       x64_out <<= 1;
       x64_out |= loc;
     }
-    x64mutex.lock();
-    x64 = x64_out;
-    x64mutex.unlock();
-  });
-  threads.push_back(std::move(sampler1));
+    x64.store(x64_out);
+    sampler_finished_c.store(sampler_finished_c.load() + 1);
+  }));
 
-  std::thread sampler2 = std::thread([&] {
+  threads.emplace_back(std::thread([&coin, &sampler_finished_c, &y64] {
     uint64_t y64_out = 0;
-    while (active.load()) {
+    for (unsigned int n = 0; n < 64; n++) {
       uint64_t loc = coin.load();
       y64_out <<= 1;
       y64_out |= loc;
     }
-    y64mutex.lock();
-    y64 = y64_out;
-    y64mutex.unlock();
-  });
-  threads.push_back(std::move(sampler2));
+    y64.store(y64_out);
+    sampler_finished_c.store(sampler_finished_c.load() + 1);
+  }));
 
-  for (auto &t : threads) {
-    t.join();
-  }
+  for (auto &t : threads) t.join();
 }
 
 uint64_t Letrng::copy_from_shared(const uint64_t &value, std::mutex &mtx) {
