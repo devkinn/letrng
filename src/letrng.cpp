@@ -32,12 +32,8 @@ uint64_t Letrng::fair_coin() {
     uint64_t x64_out = x64.load();
     uint64_t y64_out = y64.load();
 
-    // std::cout << x64_out << " " << y64_out << std::endl;
-
     uint64_t x64_folded = fold_bits(x64_out);
     uint64_t y64_folded = fold_bits(y64_out);
-
-    // std::cout << x64_folded << " " << y64_folded << std::endl;
 
     if (x64_folded == y64_folded) continue;
     if (x64_folded == 1)
@@ -105,12 +101,4 @@ void Letrng::toss_coins(std::atomic<uint64_t> &x64, std::atomic<uint64_t> &y64) 
   }));
 
   for (auto &t : threads) t.join();
-}
-
-uint64_t Letrng::copy_from_shared(const uint64_t &value, std::mutex &mtx) {
-  uint64_t result = 0;
-  mtx.lock();
-  result = value;
-  mtx.unlock();
-  return result;
 }
