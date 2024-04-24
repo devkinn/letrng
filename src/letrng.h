@@ -11,10 +11,11 @@ const unsigned int N = 10000000;
 class Letrng {
  public:
   void generate_sequence(const unsigned int n_numbers);
+  void generate_sequence_no_proc(const unsigned int n_numbers);
 
  private:
   uint64_t generate_random_number();
-  uint64_t fair_coin();
+  uint64_t fair_coin(const bool post_proc = true);
   void toss_coins(std::atomic<uint64_t> &x64, std::atomic<uint64_t> &y64);
   uint64_t fold_bits(const uint64_t &value);
 };

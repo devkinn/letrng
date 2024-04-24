@@ -2,14 +2,39 @@
 
 void Letrng::generate_sequence(const unsigned int n_numbers) {
   std::ofstream fp;
-  fp.open("output.txt");
+  std::string filename = "output.txt";
+  fp.open(filename);
+  if (!fp) {
+    std::cout << "An error occured while trying to open a file " << filename << "\n";
+    return;
+  }
   for (unsigned int n = 0; n < n_numbers; n++) {
     uint64_t random_number = generate_random_number();
     std::string number_str = std::to_string(static_cast<unsigned int>(random_number));
-    std::cout << number_str << "\n";
+    // std::cout << number_str << "\n";
     fp << number_str << "\n";
   }
   fp.close();
+  std::cout << "Output saved to file " << filename << "\n";
+}
+
+void Letrng::generate_sequence_no_proc(const unsigned int n_numbers) {
+  std::ofstream fp;
+  std::string filename = "output.txt";
+  fp.open(filename);
+  if (!fp) {
+    std::cout << "An error occured while trying to open a file " << filename << "\n";
+    return;
+  }
+  for (unsigned int n = 0; n < n_numbers; n++) {
+    uint64_t random_number = fair_coin(false);
+    random_number &= 0x00000000000000FF;
+    std::string number_str = std::to_string(static_cast<unsigned int>(random_number));
+    // std::cout << number_str << "\n";
+    fp << number_str << "\n";
+  }
+  fp.close();
+  std::cout << "Output saved to file " << filename << "\n";
 }
 
 uint64_t Letrng::generate_random_number() {
@@ -22,7 +47,7 @@ uint64_t Letrng::generate_random_number() {
   return result;
 }
 
-uint64_t Letrng::fair_coin() {
+uint64_t Letrng::fair_coin(const bool post_proc) {
   std::atomic<uint64_t> x64 = 0;
   std::atomic<uint64_t> y64 = 0;
 
@@ -32,14 +57,18 @@ uint64_t Letrng::fair_coin() {
     uint64_t x64_out = x64.load();
     uint64_t y64_out = y64.load();
 
-    uint64_t x64_folded = fold_bits(x64_out);
-    uint64_t y64_folded = fold_bits(y64_out);
+    if (post_proc == true) {
+      uint64_t x64_folded = fold_bits(x64_out);
+      uint64_t y64_folded = fold_bits(y64_out);
 
-    if (x64_folded == y64_folded) continue;
-    if (x64_folded == 1)
-      return 1;
-    else
-      return 0;
+      if (x64_folded == y64_folded) continue;
+      if (x64_folded == 1)
+        return 1;
+      else
+        return 0;
+    }
+
+    return x64_out;
   }
 
   return 0;
