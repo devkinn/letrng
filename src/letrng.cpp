@@ -1,26 +1,5 @@
 #include "letrng.h"
 
-void Letrng::generate_sequence(const unsigned int n_numbers)
-{
-	std::ofstream fp;
-	std::string filename = "output.txt";
-	fp.open(filename);
-	if (!fp)
-	{
-		std::cout << "An error occured while trying to open a file " << filename << "\n";
-		return;
-	}
-	for (unsigned int n = 0; n < n_numbers; n++)
-	{
-		uint64_t random_number = generate_random_number();
-		std::string number_str = std::to_string(static_cast<unsigned int>(random_number));
-		// std::cout << number_str << "\n";
-		fp << number_str << "\n";
-	}
-	fp.close();
-	std::cout << "Output saved to file " << filename << "\n";
-}
-
 uint64_t Letrng::generate_random_number()
 {
 	uint64_t result = 0;
@@ -77,7 +56,7 @@ void Letrng::toss_coins(std::atomic<uint64_t> &x64, std::atomic<uint64_t> &y64)
 	std::atomic<uint8_t> sampler_finished_c(0);
 	std::vector<std::thread> threads;
 
-	threads.emplace_back(std::thread([&coin, &sampler_finished_c]
+	threads.emplace_back(std::thread([this, &coin, &sampler_finished_c]
 									 {
 	for (unsigned int n = 0; n < N; n++) {
 	  coin.store(n % 2);
@@ -86,7 +65,7 @@ void Letrng::toss_coins(std::atomic<uint64_t> &x64, std::atomic<uint64_t> &y64)
 	  }
 	} }));
 
-	threads.emplace_back(std::thread([&coin, &sampler_finished_c]
+	threads.emplace_back(std::thread([this, &coin, &sampler_finished_c]
 									 {
 	for (unsigned int n = N; n > 0; n--) {
 	  coin.store(n % 2);

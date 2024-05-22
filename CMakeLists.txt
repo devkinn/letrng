@@ -12,3 +12,12 @@ include_directories(src)
 add_library(LetrngLib STATIC src/letrng.cpp)
 
 target_link_libraries(Letrng PRIVATE LetrngLib)
+
+# Add CryptoPP as dependency
+# find_library(CRYPTOPP_LIBRARY NAMES libcryptopp.a)
+# 
+# if(NOT CRYPTOPP_LIBRARY)
+#     message(FATAL_ERROR "Could not find Crypto++ library")
+# endif()
+# 
+# target_link_libraries(Letrng PRIVATE ${CRYPTOPP_LIBRARY})
