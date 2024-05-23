@@ -8,11 +8,13 @@
 class Letrng
 {
 public:
-	uint64_t generate_random_number();
+	uint64_t GenerateWord();
 
 private:
-	const unsigned int N = 10000000;
-	uint64_t fair_coin();
-	void toss_coins(std::atomic<uint64_t> &x64, std::atomic<uint64_t> &y64);
-	uint64_t fold_bits(const uint64_t &value);
+	uint64_t FairCoin();
+	void TossCoins(std::atomic<uint64_t> &x64, std::atomic<uint64_t> &y64);
+	uint64_t FoldBits(const uint64_t &value);
+
+private:
+	const unsigned int m_N = 10000000;
 };

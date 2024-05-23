@@ -1,10 +1,11 @@
 #include <fstream>
+
 #include "letrng.h"
 
 int main(int, char **)
 {
 	Letrng letrng;
-	const unsigned int n_numbers = 100000;
+	const unsigned int nNumbers = 1000;
 
 	std::ofstream fp;
 	std::string filename = "output.txt";
@@ -16,12 +17,12 @@ int main(int, char **)
 		return 0;
 	}
 
-	for (unsigned int n = 0; n < n_numbers; n++)
+	for (unsigned int n = 0; n < nNumbers; n++)
 	{
-		uint64_t random_number = letrng.generate_random_number();
-		std::string number_str = std::to_string(static_cast<unsigned int>(random_number));
-		// std::cout << number_str << "\n";
-		fp << number_str << "\n";
+		uint64_t randomNumber = letrng.GenerateWord();
+		std::string numberStr = std::to_string(static_cast<unsigned int>(randomNumber));
+		// std::cout << numberStr << "\n";
+		fp << numberStr << "\n";
 	}
 
 	fp.close();
