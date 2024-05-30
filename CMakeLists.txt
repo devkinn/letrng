@@ -8,11 +8,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 include_directories(src)
 
 # Add main executable (print output to file)
-add_executable(letrng_print_to_file main.cpp)
+add_executable(letpf main.cpp)
 
-add_library(letrng_print_lib STATIC src/letrng.cpp)
+add_library(letpf_lib STATIC src/letrng.cpp)
 
-target_link_libraries(letrng_print_to_file PRIVATE letrng_print_lib)
+target_link_libraries(letpf PRIVATE letpf_lib)
 
 # Add CryptoPP as dependency
 find_library(CRYPTOPP_LIBRARY NAMES libcryptopp.a)
@@ -22,10 +22,10 @@ if(NOT CRYPTOPP_LIBRARY)
 endif()
  
 # Add CryptoPP RSA signature verification executable with CryptoPP implementation of Letrng
-add_executable(letrng_rsa_signature crypto.cpp)
+add_executable(letsf crypto.cpp)
 
-add_library(letrng_rsa_lib STATIC src/letrng_crypto.cpp src/letrng.cpp)
+add_library(letsf_lib STATIC src/letrng_crypto.cpp src/letrng.cpp)
 
-target_link_libraries(letrng_rsa_signature PRIVATE letrng_rsa_lib)
+target_link_libraries(letsf PRIVATE letsf_lib)
 
-target_link_libraries(letrng_rsa_signature PRIVATE ${CRYPTOPP_LIBRARY})
+target_link_libraries(letsf PRIVATE ${CRYPTOPP_LIBRARY})
